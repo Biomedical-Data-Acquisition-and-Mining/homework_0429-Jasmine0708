@@ -1,16 +1,85 @@
+[引入套件]
 import pandas as pd (# 引入 pandas 套件，使用別名 pd 可以少打字)
 import numpy as np (# 引入 numpy 套件，使用別名 np 可以少打字)
 import matplotlib.pyplot as plt (# 引入 matplotlib.pyplot 視覺化套件,使用別名plt可以少打字)
 import seaborn as sns (# 引入 seaborn 套件，使用別名 sns 可以少打字)
 
+[加載數據集及查看數據集內容]
 data = pd.read_csv('D:\Jasmine\Desktop\Biomedical\Prostate_Cancer.csv'); (# 使用read_csv()讀取一個CSV的檔案)
 print("\n \t The data frame has {0[0]} rows and {0[1]} columns. \n".format(data.shape)) (# 以表格方式列印出檔案內資料)
 data.info() (# 使用.info()可以看到檔案資訊)
 data.head() (# 使用.head()可以顯示5筆資料，也可以自訂，只需要在括弧內加上要的數字)
 
+[整理數據集，刪去一些不要的]
 data.drop(data.columns[0], axis=1, inplace=True) (# 使用.drop可以排除選擇的資料列；
 						    使用inplace=True表示不創建新的對象，直接對原始對象進行修改；
 						    使用axis=1代表跨列[across])
 
-diagnosis_all = list(data.shape)[0]
-diagnosis_categories = list(data['diagnosis_result'].value_counts())
+[查看共有幾筆資料及不同種類個數]
+diagnosis_all = list(data.shape)[0] (# list()方法，傳入Iterable(可疊代的)物件來建立串列。而.shape查看矩陣或者數組的維數)
+diagnosis_categories = list(data['diagnosis_result'].value_counts()) (# .value_counts()是一種查看表格某列中有多少個不同值的快捷方法，併計算每個不同值有在該列中有多少重複值。)
+print("\n \t The data has {} diagnosis, {} malignant and {} benign.".format(diagnosis_all, 
+                                                                            diagnosis_categories[0], 
+                                                                            diagnosis_categories[1])) (列印出1.總共有多少診斷數據 2.幾個惡性 3.幾個良性)
+
+[繪製熱力圖]
+features_mean= list(data.columns[1:9]) (# .columns[1:9]為1~9列)
+plt.figure(figsize=(10,10)) (# plt.figure為設置窗口尺寸。figsize用來設置圖形的大小，括號中第一個數字為圖形的寬，第二個為圖形的高，單位為英寸。)
+sns.heatmap(data[features_mean].corr(), annot=True, square=True, cmap='RdYlGn') (# sns.heatmap為運用seaborn套件繪製熱力圖。
+										     data[]為矩陣數據集，可以使numpy的數組（array）。
+                                                                                     .corr(correlation analysis)為研究兩個或兩個以上隨機變數之間相互依存關係的方向和密切程度的方法。
+										     annot(annotate)，默認為False，當=True時，在heatmap中每個方格寫入數據。
+										     square,默認為False，當=True時，網格的每個子圖中都有灰底，可改顏色。
+										     cmap它能支持所有matplotlib庫定義的colormap。)
+plt.show() (# 將圖顯示出來)
+{檢視資料表中多個特徵兩兩的相似度。}
+
+[繪製散點矩陣圖]
+color_dic = {'M':'red', 'B':'blue'} (# 不同種用不同顏色顯示)
+colors = data['diagnosis_result'].map(lambda x: color_dic.get(x)) (# .map對sequence中的item依次執行function(item)，執行結果輸出為list。
+								     lambda function又叫匿名函式，可以用來快速建立function，但並沒有很明確給這個function一個名稱，即不用給函數一個識別字(identifier)。)
+sm = pd.plotting.scatter_matrix(data[features_mean], c=colors, alpha=0.4, figsize=((15,15)));(# c為顏色。
+												alpha=0.4圖像透明度。　
+												figsize=(15,15)圖像區域大小，英寸為單位。)
+plt.show()(# 將圖顯示出來)
+
+{這張圖分為兩部分：對角線部分和非對角線部分。
+對角線部分：核密度估計圖（Kernel Density Estimation），就是用來看某一個變量分佈情況，橫軸對應著該變量的值，縱軸對應著該變量的密度（可以理解為出現頻次）。
+非對角線部分：兩個變量之間分佈的關聯散點圖。將任意兩個變量進行配對，以其中一個為橫坐標，另一個為縱坐標，將所有的數據點繪製在圖上，用來衡量兩個變量的關聯度（Correlation）。}
+
+[繪製直方圖]
+bins = 12 (# bins控制在直方圖中有多少個離散的組。)
+plt.figure(figsize=(15,15)) (# 圖像區域大小，英寸為單位。)
+for i, feature in enumerate(features_mean): (# enumerate()的意思是列舉、枚舉，把東西一個一個的列出來。)
+    rows = int(len(features_mean)/2) (# len()為返回對象長度。)
+    
+    plt.subplot(rows, 2, i+1) (# .subplot(行,列,圖號)為繪製子圖。)
+    
+    sns.distplot(data[data['diagnosis_result']=='M'][feature], bins=bins, color='red', label='M');
+    sns.distplot(data[data['diagnosis_result']=='B'][feature], bins=bins, color='blue', label='B'); (# distplot顯示具有核密度估計圖的單變量或雙變量分佈。)
+    
+    plt.legend(loc='upper right') (# .legend()圖例放置位置。)
+ 
+plt.tight_layout()(# tight_layout()函數用於自動調整子圖參數以提供指定的填充。)
+plt.show() (#將圖顯示出來)
+
+{直方圖是數據資料分布的精確表示，它是連續變數(定量變數)的概率分布估計}
+
+[繪製箱型圖]
+plt.figure(figsize=(15,15)) (# 圖像區域大小，英寸為單位。)
+for i, feature in enumerate(features_mean): (# enumerate()的意思是列舉、枚舉，把東西一個一個的列出來。)
+    rows = int(len(features_mean)/2) (# len()為返回對象長度。)
+    
+    plt.subplot(rows, 2, i+1) (# .subplot(行,列,圖號)為繪製子圖。)
+    
+    sns.boxplot(x='diagnosis_result', y=feature, data=data, palette="Set1") (# sns.boxplot為運用seaborn套件繪製箱型圖。
+									       palette為調色。)
+
+plt.tight_layout() (# tight_layout()函數用於自動調整子圖參數以提供指定的填充。)
+plt.show() (#將圖顯示出來)
+
+{通過箱形圖可以很直觀的讀出一組數據的最大值、最小值、中位數、上四分位數、下四分位數、異常值，甚至有的箱形圖還能讀出平均值。}
+
+[選擇特徵]
+features_selection = ['perimeter', 'area']
+features_selection
