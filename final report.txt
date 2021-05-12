@@ -1,0 +1,16 @@
+import pandas as pd (# 引入 pandas 套件，使用別名 pd 可以少打字)
+import numpy as np (# 引入 numpy 套件，使用別名 np 可以少打字)
+import matplotlib.pyplot as plt (# 引入 matplotlib.pyplot 視覺化套件,使用別名plt可以少打字)
+import seaborn as sns (# 引入 seaborn 套件，使用別名 sns 可以少打字)
+
+data = pd.read_csv('D:\Jasmine\Desktop\Biomedical\Prostate_Cancer.csv'); (# 使用read_csv()讀取一個CSV的檔案)
+print("\n \t The data frame has {0[0]} rows and {0[1]} columns. \n".format(data.shape)) (# 以表格方式列印出檔案內資料)
+data.info() (# 使用.info()可以看到檔案資訊)
+data.head() (# 使用.head()可以顯示5筆資料，也可以自訂，只需要在括弧內加上要的數字)
+
+data.drop(data.columns[0], axis=1, inplace=True) (# 使用.drop可以排除選擇的資料列；
+						    使用inplace=True表示不創建新的對象，直接對原始對象進行修改；
+						    使用axis=1代表跨列[across])
+
+diagnosis_all = list(data.shape)[0]
+diagnosis_categories = list(data['diagnosis_result'].value_counts())
